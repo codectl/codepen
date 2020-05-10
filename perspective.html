@@ -1,0 +1,102 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Perspective landscape 3D photo</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <link href='css/perspective.css' rel='stylesheet' type='text/css'>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/PerspectiveTransform.min.js"></script>
+    <script src="js/modernizr.min.js"></script>
+    <script src="js/dat.gui.min.js"></script>
+</head>
+<body>
+<div id="wrapper">
+    <div id="container">
+        <img src="./images/perspective/lake.jpg">
+        <div id="ground"></div>
+    </div>
+</div>
+<script>
+    (function () {
+
+        let gui = new dat.GUI();
+
+        let wrapper = document.getElementById('wrapper');
+        let container = document.getElementById('container');
+        let ground = document.getElementById('ground');
+
+        let containerStyle = container.style;
+        let groundStyle = ground.style;
+        let groundTransform;
+
+        let winWidth;
+        let winHeight;
+
+        let tx = 0;
+        let ty = 0;
+        let mx = 0; // mouse x
+        let my = 0; // mouse y
+
+        let transformStyle = Modernizr.prefixed('transform');
+
+        let config = {
+            useWebkitMask: true,
+            reset: function () {
+                config.groundOffsetX = 50
+                config.groundOffsetY = 100
+            }
+        }
+
+
+        function init() {
+            /* INITIALIZE STUFF HERE */
+            groundTransform = new PerspectiveTransform(ground, $("#wrapper").width(), 300);
+
+            config.reset();
+            gui.add(config, 'groundOffsetX', 0, 200).listen();
+            gui.add(config, 'groundOffsetY', 0, 200).listen();
+
+            window.onresize = onResize;
+            onResize();
+            render();
+            window.onmousemove = onMouseMove;
+        }
+
+        function onMouseMove(e) {
+            tx = e.pageX / winWidth * 2 - 1;
+            ty = e.pageY / winHeight * 2 - 1;
+        }
+
+        function onResize() {
+            winWidth = window.innerWidth;
+            winHeight = window.innerHeight;
+        }
+
+        function render() {
+            requestAnimationFrame(render);
+            /* RENDER STUFF HERE */
+            mx += (tx - mx) * .05;
+            my += (ty - my) * .05;
+
+            containerStyle[transformStyle] = '' +
+                'perspective(500px) scale3d(2,2,1) ' +
+                'rotateY(' + (mx * 8) + 'deg) ' +
+                'rotateX(' + (-my * 7) + 'deg) ' +
+                'translateY(' + (-my * 30) + 'px)' +
+                'translateZ(-400px)';
+            groundTransform.bottomLeft.x = (mx - 1) * config.groundOffsetX;
+            groundTransform.bottomLeft.y = 300 + my * config.groundOffsetY;
+            groundTransform.bottomRight.x = $("#wrapper").width() + (mx + 1) * config.groundOffsetX;
+            groundTransform.bottomRight.y = 300 + my * config.groundOffsetY;
+            groundTransform.update();
+        }
+
+        return init;
+
+    }())();
+
+</script>
+</body>
+</html>
