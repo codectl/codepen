@@ -12,10 +12,12 @@
     <script src="js/dat.gui.min.js"></script>
 </head>
 <body>
-<div id="wrapper">
-    <div id="container">
-        <img src="./images/perspective/lake.jpg">
-        <div id="ground"></div>
+<div id="viewport">
+    <div id="wrapper">
+        <div id="container">
+            <img src="./images/perspective/lake.jpg" onload="$(this).data('loaded', 'loaded');">
+            <div id="ground"></div>
+        </div>
     </div>
 </div>
 <script>
@@ -26,6 +28,7 @@
         let wrapper = document.getElementById('wrapper');
         let container = document.getElementById('container');
         let ground = document.getElementById('ground');
+        let $img = $("#container img");
 
         let containerStyle = container.style;
         let groundStyle = ground.style;
@@ -33,6 +36,7 @@
 
         let winWidth;
         let winHeight;
+        let imgHeight = 0;
 
         let tx = 0;
         let ty = 0;
@@ -48,7 +52,6 @@
                 config.groundOffsetY = 100
             }
         }
-
 
         function init() {
             /* INITIALIZE STUFF HERE */
@@ -74,6 +77,14 @@
             winHeight = window.innerHeight;
         }
 
+        $img.load(function () {
+            imgHeight = $img.height();
+            if (imgHeight > winHeight) {
+                let heightDiff = imgHeight - winHeight;
+                $("#container").css("top", - heightDiff / 2);
+            }
+        });
+
         function render() {
             requestAnimationFrame(render);
             /* RENDER STUFF HERE */
@@ -91,6 +102,7 @@
             groundTransform.bottomRight.x = $("#wrapper").width() + (mx + 1) * config.groundOffsetX;
             groundTransform.bottomRight.y = 300 + my * config.groundOffsetY;
             groundTransform.update();
+
         }
 
         return init;
